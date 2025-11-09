@@ -109,7 +109,7 @@ class DefaultExtension extends MProvider {
         throw new Error("supportsLatest not implemented");
     }
 
-    
+
     async search(query, page, filters) {
         var slug = "/indexes/content/search"
 
@@ -149,7 +149,7 @@ class DefaultExtension extends MProvider {
         var link = `${linkSlug}${url}`
         var detailsApiSlug = `/${url}/extensive`
         var animeDetails = await this.request(detailsApiSlug);
-        
+
         var pref_name = this.getPreference("animeonsen_pref_ep_title_lang")
         var imgRes = this.getPreference("animeonsen__pref_img_res_1")
 
@@ -169,7 +169,7 @@ class DefaultExtension extends MProvider {
         var chapters = [];
         var episodeAPISlug = `/${url}/episodes`
         var episodeDetails = await this.request(episodeAPISlug);
-        
+
         Object.keys(episodeDetails).forEach(ep => {
             var ep_data = episodeDetails[ep]
 
@@ -178,42 +178,45 @@ class DefaultExtension extends MProvider {
             var ep_name = pref_name == "jpn" ? ep_name_jp : ep_name_eng;
 
             chapters.push({
-                name:`E${ep}: ${ep_name}`,
+                name: `E${ep}: ${ep_name}`,
                 url: `/${url}/video/${ep}`,
             })
         })
 
         chapters.reverse()
-        return { name, imageUrl, status, description, genre,link, chapters }
+        return { name, imageUrl, status, description, genre, link, chapters }
     }
 
     // For anime episode video list
     async getVideoList(url) {
         var streamDetails = await this.request(url);
-        var streamData = streamDetails.uri
+        var streamData = streamDetails.uri;
 
         var streams = [
             {
-                quality:`Default (720p)`,
+                quality: `Default (720p)`,
                 url: streamData.stream,
                 originalUrl: streamData.stream
             }
         ];
 
         var subtitles = [];
-        var subData = streamDetails.subtitles;
-        Object.keys(subData).forEach(sub => {
-            subtitles.push({
-                label:sub,
-                file: subData[url]
-            })
-        });
+        var subData = streamDetails.subtitles || {};
 
-        streams[0].subtitles = subtitles
+        if (typeof subData === 'object' && subData !== null) {
+            Object.keys(subData).forEach(sub => {
+                subtitles.push({
+                    label: sub,
+                    file: subData[sub]
+                });
+            });
+        }
 
-        return streams
+        streams[0].subtitles = subtitles;
+
+        return streams;
     }
-   
+
     getSourcePreferences() {
         return [{
             key: 'animeonsen__pref_title_lang',
@@ -233,7 +236,7 @@ class DefaultExtension extends MProvider {
                 entries: ["Japenese", "English"],
                 entryValues: ["jpn", "en"]
             }
-        },{
+        }, {
             key: 'animeonsen__pref_img_res_1',
             listPreference: {
                 title: 'Preferred image resolution',
