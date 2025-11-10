@@ -428,7 +428,7 @@
         "dateFormatLocale": "",
         "isNsfw": false,
         "hasCloudflare": false,
-        "sourceCodeUrl": "https://raw.githubusercontent.com/Swakshan/mangayomi-swak-extensions/refs/heads/main/javascript/anime/src/indo/otakudesu.js",
+        "sourceCodeUrl": "https://raw.githubusercontent.com/roshancodespace/mangayomi-swak-extensions/refs/heads/main/javascript/anime/src/indo/otakudesu.js",
         "apiUrl": "https://www.sankavollerei.com/anime",
         "version": "0.0.1",
         "isManga": false,
