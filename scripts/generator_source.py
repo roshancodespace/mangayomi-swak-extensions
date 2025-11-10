@@ -1,34 +1,31 @@
 from pathlib import Path
-import os, shutil, json, re
+import os
 from glob import glob
-from pprint import pp
-from common import readFile, readJsonFile, writeJsonFile, getParentPath,extensionInfo
+from common import readFile, writeJsonFile, getParentPath, extensionInfo
 from model import Source, ItemType
 
-def formatExtenstionInfo(info):
-    exids = info["ids"] if "ids" in info else info["id"] if "id" in info else None
-    exlangs = (
-        info["langs"]
-        if "langs" in info
-        else [info["lang"]] if "lang" in info else ["all"]
-    )
+def formatExtensionInfo(info):
+    exids = info.get("ids") or info.get("id") or None
+    exlangs = info.get("langs") or ([info["lang"]] if "lang" in info else ["all"])
 
-    bkInfo = info
+    bkInfo = info.copy()
     bkInfo.pop("ids", None)
     bkInfo.pop("langs", None)
     rd = []
 
     for lang in exlangs:
         id = exids
-        if type(exids) is dict:
-            id = exids[lang] if exids is not None and lang in exids else None
+        if isinstance(exids, dict):
+            id = exids.get(lang)
         bkInfo["id"] = id
         bkInfo["lang"] = lang
         pkgPath = bkInfo["pkgPath"]
         bkInfo["ItemType"] = (
             ItemType.manga
             if "manga/" in pkgPath
-            else ItemType.anime if "anime/" in pkgPath else ItemType.novel
+            else ItemType.anime
+            if "anime/" in pkgPath
+            else ItemType.novel
         )
         bkInfo["sourceCodeUrl"] = (
             "https://raw.githubusercontent.com/Swakshan/mangayomi-swak-extensions/refs/heads/main/javascript/"
@@ -39,33 +36,36 @@ def formatExtenstionInfo(info):
     return rd
 
 
-main_dir = getParentPath()
+def main():
+    main_dir = getParentPath()
+    root_folder = main_dir / "javascript/"
+    js_files = glob(os.path.join(root_folder, "**", "*.js"), recursive=True)
 
-root_folder = main_dir / "javascript/"
-js_files = glob(os.path.join(root_folder, "**", "*.js"), recursive=True)
+    animeList = []
+    mangaList = []
+    novelList = []
 
-animeList = []
-mangaList = []
-novelList = []
-
-
-try:
     for filePath in js_files:
-        paths = Path(filePath).resolve().parts
+        try:
+            paths = Path(filePath).resolve().parts
+            info = extensionInfo(filePath)
+            formattedInfo = formatExtensionInfo(info)
 
-        info = extensionInfo(filePath)
-        formattedInfo: list = formatExtenstionInfo(info)
+            if "anime" in paths:
+                animeList.extend(formattedInfo)
+            elif "manga" in paths:
+                mangaList.extend(formattedInfo)
+            else:
+                novelList.extend(formattedInfo)
 
-        if "anime" in paths:
-            animeList.extend(formattedInfo)
-        elif "manga" in paths:
-            mangaList.extend(formattedInfo)
-        else:
-            novelList.extend(formattedInfo)
+        except Exception as e:
+            print("ERR: " + Path(filePath).name)
+            print(e)
 
     writeJsonFile(main_dir / "anime_index.json", animeList)
     writeJsonFile(main_dir / "index.json", mangaList)
     writeJsonFile(main_dir / "novel_index.json", novelList)
-except Exception as e:
-    print("ERR: " + paths[len(paths) - 1])
-    print(e)
+
+
+if __name__ == "__main__":
+    main()
