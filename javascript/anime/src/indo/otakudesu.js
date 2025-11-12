@@ -109,7 +109,6 @@ class DefaultExtension extends MProvider {
       imageUrl: data.poster,
       link: data.slug,
       description: data.synopsis,
-      status: data.status ?? "Unknown",
       chapters: (data.episode_lists ?? []).map((ep) => ({
         name: `EP${ep.episode_number}: ${ep.episode}`,
         url: ep.slug,
